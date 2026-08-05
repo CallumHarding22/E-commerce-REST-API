@@ -1,0 +1,15 @@
+{
+  "name": "e-commerce-rest-api",
+  "version": "1.0.0",
+  "description": "Creating a rest API for an e-commerce website using Node.js, Express and PostgreSQL",
+  "license": "ISC",
+  "author": "callum",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
