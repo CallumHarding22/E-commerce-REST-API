@@ -5,13 +5,14 @@ const port = 3000;
 // 💡 FIX 1: Import the main passport package directly into index.js
 const passport = require('passport'); 
 
-const userRoutes = require('./routes/users');
+const userRouter = require('./routes/users');
 // 💡 FIX 2: Rename this variable to 'authRouterSetup' because it is a function, not a router yet
 const authRouterSetup = require('./auth/auth.js'); 
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
-const registerRoute = require("./routes/register");
+const registerRouter = require("./routes/register");
+const productsRouter = require("./routes/porducts.js")
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
@@ -34,8 +35,9 @@ const authRouter = authRouterSetup(passport);
 
 // 3. THIRD: Use the freshly generated router
 app.use('/auth', authRouter);
-app.use("/users", userRoutes);
-app.use("/register", registerRoute);
+app.use("/users", userRouter);
+app.use("/register", registerRouter);
+app.use("/products", productsRouter)
 
 app.get('/', function (req, res) {
     if (req.user) {
