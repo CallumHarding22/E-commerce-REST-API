@@ -1,5 +1,6 @@
 const LocalStrategy = require("passport-local").Strategy;
 const db = require("../config/db");
+const bcrypt = require("bcrypt");
 
 module.exports = function (passport) {
   passport.use(
@@ -25,14 +26,19 @@ module.exports = function (passport) {
             console.log("User does not exist");
             return done(null, false, { message: "User does not exist" });
           }
+          
+          bcrypt.compare(password, u.password, (err,result)=>{
+            if(err){
+              console.log(err);
+              return;
+            }
 
-          // Verify password
-          if (password === u.password) {
-            return done(null, u);
-          } else {
-            console.log("Incorrect password");
-            return done(null, false, { message: "Incorrect password." });
-          }
+            if(result){
+              return done(null, u);
+            }else{
+              return done(null, false, { message: "Incorrect password." });
+            }
+          });
         } catch (err) {
           // 💡 FIXED: Use done(err) instead of next(err)
           return done(err);

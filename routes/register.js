@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 
-
+const saltRounds = 10;
 router.post("/", async (req, res, next)=>{
     const user = {
         "email": req.body.email,
@@ -13,6 +13,15 @@ router.post("/", async (req, res, next)=>{
         "lastName": req.body.lastName
     } 
 
+    bcrypt.hash(user.password, saltRounds, (err, hash)=>{
+        if(err){
+            console.log(err);
+            return;
+        }
+
+        user.password = hash;
+        console.log(user.password);
+    })
     //check if user with that email already exists within the db
 
     let u = await db.query("SELECT * FROM users WHERE email = $1", [user.email]);
