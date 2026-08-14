@@ -11,6 +11,7 @@ const authRouterSetup = require('./auth/auth.js');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
+const registerRoute = require("./routes/register");
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
@@ -34,6 +35,7 @@ const authRouter = authRouterSetup(passport);
 // 3. THIRD: Use the freshly generated router
 app.use('/auth', authRouter);
 app.use("/users", userRoutes);
+app.use("/register", registerRoute);
 
 app.get('/', function (req, res) {
     if (req.user) {
