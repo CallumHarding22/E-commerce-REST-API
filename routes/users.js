@@ -12,4 +12,18 @@ router.get("/", async (req, res , next)=>{
     }
 })
 
+router.put("/", async (req, res, next)=>{
+    const user = req.body;
+    try{
+        const result = await db.query('UPDATE users SET "firstName" = $2, "lastName" = $3, "email" = $4 WHERE "ID" = $1', [req.user.ID, user.firstName, user.lastName, user.email]);
+
+    }
+    catch(err){
+        res.status(500).send({"message": err});
+    }
+
+    res.status(201).send({"message": "user information updated successfully!"});
+    
+})
+
 module.exports = router;
