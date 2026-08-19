@@ -20,7 +20,6 @@ router.post("/", async (req, res, next)=>{
         }
 
         user.password = hash;
-        console.log(user.password);
     })
     //check if user with that email already exists within the db
 

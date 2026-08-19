@@ -35,7 +35,7 @@ const authRouter = authRouterSetup(passport);
 
 // 3. THIRD: Use the freshly generated router
 app.use('/auth', authRouter);
-app.use("/users", userRouter);
+app.use("/user", userRouter);
 app.use("/register", registerRouter);
 app.use("/products", productsRouter)
 

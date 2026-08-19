@@ -14,7 +14,7 @@ router.get('/', async (req, res, next)=>{
 router.get('/:id', async(req, res, next)=>{
     const id = req.params.id;
     try{
-            const products = await db.query('SELECT * FROM products WHERE "ID" = $1;', [id]);
+            const products = await db.query('SELECT * FROM products WHERE "ID" = $1', [id]);
             res.status(200).json(products.rows);
         }catch(e){
             console.log(e);

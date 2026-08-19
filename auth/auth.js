@@ -3,7 +3,7 @@ const authRouter = express.Router();
 
 // Wrap your route configuration in a function, just like your strategy
 module.exports = function(passport) {
-    authRouter.route('/signIn')
+    authRouter.route('/login')
     .post(passport.authenticate('local', {
         failureRedirect: '/',
     }), function(req, res) {

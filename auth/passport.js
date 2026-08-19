@@ -15,7 +15,7 @@ module.exports = function(app) {
 
     passport.deserializeUser(async (id, done) => {
         try {
-            const res = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+            const res = await db.query('SELECT * FROM users WHERE "ID" = $1', [id]);
             done(null, res.rows[0]); 
         } catch (err) {
             done(err);
