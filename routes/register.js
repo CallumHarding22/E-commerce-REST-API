@@ -28,19 +28,35 @@ router.post("/", async (req, res, next)=>{
     if(!u){
         console.log("no existing user user found in db, continuing with registration");
         try{
-            db.query("INSERT INTO users VALUES(DEFAULT,$1,$2,$3,$4)", [user.firstName, user.lastName, user.password, user.email]);
-            
+            await db.query("INSERT INTO users VALUES(DEFAULT,$1,$2,$3,$4);", [user.firstName, user.lastName, user.password, user.email]);
+
+
+            // Need to create a cart for user on registration. AKA assign a cartID to the userID within table cart
+            //so get the newly created userID from the users table and then use that to assign a cartID to the user
+            let id = await db.query('SELECT "ID" FROM users WHERE email = $1', [user.email])
+            id = id.rows[0].ID;
+
+            await db.query('INSERT INTO cart VALUES(DEFAULT,$1);',[id]);
+            res.status(201).send({"message": "user registered successfully!"});
         }
         catch(err)
         {
             res.status(500).send({"message": err});
         }
 
-        res.status(201).send({"message": "user registered successfully!"});
+        
+    }else{
+        return res.status(409).send({
+        message: "A user with that email already exists"
+    });
     }
 
     
     
 }) 
+
+router.post("/checkout", async (req, res, next)=>{
+    
+})
 
 module.exports = router;
