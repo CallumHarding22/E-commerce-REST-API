@@ -55,8 +55,5 @@ router.post("/", async (req, res, next)=>{
     
 }) 
 
-router.post("/checkout", async (req, res, next)=>{
-    
-})
 
 module.exports = router;

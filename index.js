@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+require('dotenv').config();
 
 // 💡 FIX 1: Import the main passport package directly into index.js
 const passport = require("passport");
@@ -20,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   expressSession({
-    secret: "VVRcSgl81KqRFtCMJFuZ7yKdYXO74QFc9naRHrT6cdBTY3vc",
+    secret: process.env.SECRET_KEY,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -38,10 +39,10 @@ const authRouter = authRouterSetup(passport);
 
 // 3. THIRD: Use the freshly generated router
 app.use("/auth", authRouter);
-app.use("/user", userRouter);
+app.use("/user", ensureAuthenticated, userRouter);
 app.use("/register", registerRouter);
-app.use("/products", productsRouter);
-app.use("/cart", cartRouter);
+app.use("/products", ensureAuthenticated, productsRouter);
+app.use("/cart", ensureAuthenticated, cartRouter);
 
 app.get("/", function (req, res) {
   if (req.user) {
@@ -54,3 +55,12 @@ app.get("/", function (req, res) {
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
+
+
+function ensureAuthenticated(req, res, next){
+  if(req.isAuthenticated()){
+    return next();
+  }else{
+    res.redirect('/login');
+  }
+}

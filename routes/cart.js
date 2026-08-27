@@ -114,4 +114,18 @@ router.delete("/:productID", async (req, res, next) => {
     });
   }
 });
+
+router.post("/checkout", async (req, res , next)=>{
+    const cartID = (await db.query('SELECT "ID" FROM cart WHERE "userID" = $1;', [req.user.ID])).rows.ID;
+
+    const cart = await db.query('SELECT * FROM "cartItems" WHERE "cartID" = $1;', [cartID]);
+
+    if (cart.rows.length === 0){
+        console.log("There are no items in the cart for checkout");
+        res.status(201).send({"message": "There are no items in the cart for checkout"});
+    }
+    else{
+        
+    }
+})
 module.exports = router;
