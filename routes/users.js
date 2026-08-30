@@ -2,6 +2,20 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 
+
+/**
+ * @openapi
+ * /GetUser:
+ *  get:
+ *      tag:
+ *        - GeUser
+ *          description: Gets a Users information
+ *          response:
+ *            200:
+ *              description: User found
+ * 
+ *  
+ */
 router.get("/", async (req, res , next)=>{
     try{
         const id = req.user.ID;
