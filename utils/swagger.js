@@ -18,7 +18,7 @@ const options = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
-        }
+        },
       },
     },
     security: [
@@ -27,7 +27,10 @@ const options = {
       },
     ],
   },
-  apis: ["./src/users.js", "./src/schema/*.ts"],
+  apis: [
+    "./routes/*.js",
+    "./auth/*.js",
+  ],
 };
 
 const swaggerSpec = swaggerJsDoc(options);
