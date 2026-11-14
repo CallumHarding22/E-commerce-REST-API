@@ -16,6 +16,7 @@ const cors = require("cors");
 const registerRouter = require("./routes/register");
 const productsRouter = require("./routes/porducts.js");
 const cartRouter = require("./routes/cart.js");
+const ordersRouter = require("./routes/orders.js");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +45,7 @@ app.use("/user", ensureAuthenticated, userRouter);
 app.use("/register", registerRouter);
 app.use("/products", ensureAuthenticated, productsRouter);
 app.use("/cart", ensureAuthenticated, cartRouter);
+app.use("/orders",ensureAuthenticated, ordersRouter );
 
 app.get("/", function (req, res) {
   if (req.user) {

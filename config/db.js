@@ -8,6 +8,4 @@ const pool = new Pool({
     database: "ecommerceRestAPI"
 })
 
-module.exports = {
-    query: (text,params) => pool.query(text,params),
-}
+module.exports = pool;

@@ -227,36 +227,147 @@ router.delete("/:productID", async (req, res, next) => {
  *     tags:
  *       - Cart
  *     summary: Checkout the current user's cart
- *     description: Initiates checkout for the authenticated user's cart.
+ *     description: Creates an order from the authenticated user's cart, saves its items, and clears the cart.
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Checkout completed successfully.
  *       '201':
- *         description: The cart is empty; there are no items to checkout.
+ *         description: Order created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Order created successfully
+ *                 orderID:
+ *                   type: integer
+ *                   example: 42
+ *                 orderDate:
+ *                   type: string
+ *                   format: date-time
+ *                 total:
+ *                   type: string
+ *                   example: "59.98"
+ *       '400':
+ *         description: The cart is empty.
  *       '401':
  *         description: Authentication required.
+ *       '404':
+ *         description: Cart not found.
  *       '500':
- *         description: Failed to process checkout.
+ *         description: Checkout failed.
  */
 
-router.post("/checkout", async (req, res, next) => {
-  const cartID = (
-    await db.query('SELECT "ID" FROM cart WHERE "userID" = $1;', [req.user.ID])
-  ).rows.ID;
+router.post("/checkout", async (req, res) => {
+    const client = await db.connect();
 
-  const cart = await db.query(
-    'SELECT * FROM "cartItems" WHERE "cartID" = $1;',
-    [cartID],
-  );
+    try {
+        await client.query("BEGIN");
 
-  if (cart.rows.length === 0) {
-    console.log("There are no items in the cart for checkout");
-    res
-      .status(201)
-      .send({ message: "There are no items in the cart for checkout" });
-  } else {
-  }
+        // Find the authenticated user's cart
+        const cartResult = await client.query(
+            'SELECT "ID" FROM cart WHERE "userID" = $1',
+            [req.user.ID]
+        );
+
+        if (cartResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                message: "Cart not found"
+            });
+        }
+
+        const cartID = cartResult.rows[0].ID;
+
+        // Retrieve cart items and product prices
+        const itemsResult = await client.query(
+            `SELECT
+                ci."productID",
+                ci."Quantity",
+                p."price"
+             FROM "cartItem" AS ci
+             JOIN products AS p
+               ON p."ID" = ci."productID"
+             WHERE ci."cartID" = $1
+             FOR UPDATE OF ci`,
+            [cartID]
+        );
+
+        if (itemsResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({
+                message: "Your cart is empty"
+            });
+        }
+
+        // Calculate order total
+        const totalResult = await client.query(
+            `SELECT COALESCE(
+                SUM(ci."Quantity" * p."price"), 0
+             ) AS total
+             FROM "cartItem" AS ci
+             JOIN products AS p
+               ON p."ID" = ci."productID"
+             WHERE ci."cartID" = $1`,
+            [cartID]
+        );
+
+        const total = totalResult.rows[0].total;
+
+        // Create order
+        const orderResult = await client.query(
+            `INSERT INTO orders ("userID", "total")
+             VALUES ($1, $2)
+             RETURNING "orderID", "orderDate", "total"`,
+            [req.user.ID, total]
+        );
+
+        const order = orderResult.rows[0];
+
+        // Insert products into orderItem
+        await client.query(
+            `INSERT INTO "orderItem"
+                ("orderID", "productID", "quantity", "unitPrice")
+             SELECT
+                $1,
+                ci."productID",
+                ci."Quantity",
+                p."price"
+             FROM "cartItem" AS ci
+             JOIN products AS p
+               ON p."ID" = ci."productID"
+             WHERE ci."cartID" = $2`,
+            [order.orderID, cartID]
+        );
+
+        // Clear cart
+        await client.query(
+            'DELETE FROM "cartItem" WHERE "cartID" = $1',
+            [cartID]
+        );
+
+        await client.query("COMMIT");
+
+        return res.status(201).json({
+            message: "Order created successfully",
+            orderID: order.orderID,
+            orderDate: order.orderDate,
+            total: order.total
+        });
+
+    } catch (err) {
+        await client.query("ROLLBACK");
+
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Failed to complete checkout"
+        });
+
+    } finally {
+        client.release();
+    }
 });
 module.exports = router;
